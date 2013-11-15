@@ -73,7 +73,7 @@ def generate_enums(outf, enums):
     for e in enums:
             #if len(e.description) > 0:
         generate_xmlDocSummary(outf, e.description, 1)
-        outf.write("\tpublic enum %s : ushort\n\t{\n" % e.name)
+        outf.write("\tpublic enum %s : uint\n\t{\n" % e.name)
 
         for entry in e.entry:
             if len(entry.description) > 0:
@@ -114,10 +114,26 @@ namespace MavLink\n{
         
         outf.write("""
         public override int Serialize(byte[] bytes, ref int offset)
-            {
-                return MavLinkSerializer.Serialize_%s(this, bytes, ref offset);
-            }        
+        {
+            return MavLinkSerializer.Serialize_%s(this, bytes, ref offset);
+        }
 """ % m.name.upper())
+
+        outf.write("""
+        public override string ToString()
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            sb.Append(\"MSG_%s:\\n\");
+""" % m.name.upper())
+
+        for f in m.fields:
+            outf.write("\t\t\tsb.AppendFormat(\"- %s: {0}\\n\", %s);\n" % (f.name, mapFieldName.get(f.name, f.name) ))
+
+        outf.write("""
+            return sb.ToString();
+        }
+
+""")
 
         outf.write("\t}\n\n")    
     outf.write("}\n\n")
